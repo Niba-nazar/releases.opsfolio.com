@@ -1,7 +1,8 @@
 on:
-    push:
-      tags:
-        - '*'
+  push:
+    tags:
+      - '*'
+
 jobs:
   windows-release:
     name: release x86_64-pc-windows-gnu
@@ -29,7 +30,7 @@ jobs:
           override: true
           target: ${{ matrix.triple.target }}
           default: true
-  
+
       - name: Get Release Upload URL
         id: get_upload_url
         uses: actions/github-script@v5
@@ -54,11 +55,24 @@ jobs:
           cargo build --release --target ${{ matrix.triple.target }}
           .\target\${{ matrix.triple.target }}\release\surveilr.exe --help
           Compress-Archive -Path .\target\${{ matrix.triple.target }}\release\surveilr.exe -DestinationPath resource-surveillance_${{ github.ref_name }}_${{ matrix.triple.target }}.zip
-      
+   
+
+   
+      - name: Set Up Deno
+        run: |
+          curl -fsSL https://deno.land/x/install/install.sh | sh
+          echo "export PATH=\"$HOME/.deno/bin:$PATH\"" >> $GITHUB_ENV
+          echo "Deno installed"
+
+      - name: Run Deno Tests
+        run: deno test -A ./lib/assurance/ --fail-fast
+
+
+
       - name: Upload surveilr.exe to releases
         uses: actions/upload-release-asset@v1
         env: 
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_CUSTOM_TOKEN }}
         with:
           upload_url: ${{ steps.get_upload_url.outputs.result }}
           asset_path: .\target\${{ matrix.triple.target }}\release\surveilr.exe
@@ -68,73 +82,88 @@ jobs:
       - name: Upload To Releases
         uses: actions/upload-release-asset@v1
         env: 
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_CUSTOM_TOKEN }}
         with:
           upload_url: ${{ steps.get_upload_url.outputs.result }}
           asset_path: resource-surveillance_${{ github.ref_name }}_${{ matrix.triple.target }}.zip
           asset_name: resource-surveillance_${{ github.ref_name }}_${{ matrix.triple.target }}.zip
           asset_content_type: application/zip
-  
+
   macos-release:
-      name: release x86_64-apple-darwin
-      runs-on: macos-latest
-      strategy:
-        matrix:
-          toolchain: [stable]
-          triple:
-            - { target: x86_64-apple-darwin, cross: false }
-      steps:
-        - uses: actions/checkout@v2
-          with:
-            repository: opsfolio/resource-surveillance
-            token: ${{ secrets.GH_PAT }}
-            ref: 'main' # or any specific branch/tag you wish to checkout
-        - name: Add target
-          run: rustup target add x86_64-apple-darwin
-        - name: Extract Release Version
-          id: release_version
-          run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-        - name: Install toolchain
-          uses: actions-rs/toolchain@v1
-          with:
-            profile: minimal
-            toolchain: ${{ matrix.toolchain }}
-            override: true
+    name: release x86_64-apple-darwin
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        toolchain: [stable]
+        triple:
+          - { target: x86_64-apple-darwin, cross: false }
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: opsfolio/resource-surveillance
+          token: ${{ secrets.GH_PAT }}
+          ref: 'main'
+      - name: Add target
+        run: rustup target add x86_64-apple-darwin
+      - name: Extract Release Version
+        id: release_version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
 
-        - name: Get Release Upload URL
-          id: get_upload_url
-          uses: actions/github-script@v5
-          with:
-            script: |
-                const tag = process.env.GITHUB_REF.split('/').pop();
-                const releases = await github.rest.repos.listReleases({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                });
-                const release = releases.data.find(release => release.tag_name === tag);
-                if (!release) {
-                    throw new Error(`Release not found for tag ${tag}`);
-                }
-                return release.upload_url;
-            result-encoding: string
-          env:
-                GITHUB_REF: ${{ github.ref }}
+      - name: Get Release Upload URL
+        id: get_upload_url
+        uses: actions/github-script@v5
+        with:
+          script: |
+              const tag = process.env.GITHUB_REF.split('/').pop();
+              const releases = await github.rest.repos.listReleases({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+              });
+              const release = releases.data.find(release => release.tag_name === tag);
+              if (!release) {
+                  throw new Error(`Release not found for tag ${tag}`);
+              }
+              return release.upload_url;
+          result-encoding: string
+        env:
+              GITHUB_REF: ${{ github.ref }}
 
-        - name: Print Upload URL
-          run: |
-            echo ${{ steps.get_upload_url.outputs.result }}
-        - name: Build with Cargo
-          run: |
-            cargo build --release --target ${{ matrix.triple.target }}
-            ./target/${{ matrix.triple.target }}/release/surveilr --help
-            zip -r resource-surveillance_${{github.ref_name}}_${{ matrix.triple.target }}.zip target/${{ matrix.triple.target }}/release/surveilr
+      - name: Print Upload URL
+        run: |
+          echo ${{ steps.get_upload_url.outputs.result }}
 
-        - name: Upload To Releases
-          uses: actions/upload-release-asset@v1
-          env: 
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            upload_url: ${{ steps.get_upload_url.outputs.result }}
-            asset_path: resource-surveillance_${{github.ref_name}}_${{ matrix.triple.target }}.zip
-            asset_name: resource-surveillance_${{github.ref_name}}_${{ matrix.triple.target }}.zip
-            asset_content_type: application/zip 
+      - name: Build with Cargo
+        run: |
+          cargo build --release --target ${{ matrix.triple.target }}
+          ./target/${{ matrix.triple.target }}/release/surveilr --help
+          zip -r resource-surveillance_${{github.ref_name}}_${{ matrix.triple.target }}.zip target/${{ matrix.triple.target }}/release/surveilr
+
+
+
+
+      - name: Set Up Deno
+        run: |
+          curl -fsSL https://deno.land/x/install/install.sh | sh
+          echo "export PATH=\"$HOME/.deno/bin:$PATH\"" >> $GITHUB_ENV
+          echo "Deno installed"
+
+      - name: Run Deno Tests
+        run: deno test -A ./lib/assurance/ --fail-fast
+
+
+
+      - name: Upload To Releases
+        uses: actions/upload-release-asset@v1
+        env: 
+          GITHUB_TOKEN: ${{ secrets.MY_CUSTOM_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_upload_url.outputs.result }}
+          asset_path: resource-surveillance_${{github.ref_name}}_${{ matrix.triple.target }}.zip
+          asset_name: resource-surveillance_${{github.ref_name}}_${{ matrix.triple.target }}.zip
+          asset_content_type: application/zip
