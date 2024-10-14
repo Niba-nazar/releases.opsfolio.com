@@ -3,6 +3,10 @@ name: CI for Surveilr Tests
 on:
   release:
     types: [published]
+  # Uncomment the next lines for testing purposes
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   test:
@@ -10,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout www.surveilr.com repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: surveilr/www.surveilr.com
           token: ${{ secrets.GH_PAT }}
@@ -22,13 +26,20 @@ jobs:
           echo "export PATH=\"$HOME/.deno/bin:$PATH\"" >> $GITHUB_ENV
           echo "Deno installed"
 
+      - name: Check Deno Version
+        run: deno --version
+
       - name: Install eget
         run: |
           echo "Installing eget..."
           curl -sSL https://zyedidia.github.io/eget.sh | bash
 
+      - name: Check eget Installation
+        run: eget --version
+
       - name: Install or Upgrade Surveilr
         run: |
+          set -e
           if command -v surveilr &>/dev/null; then
               echo "surveilr is installed. Upgrading..."
               surveilr upgrade
