@@ -1,12 +1,18 @@
 name: CI for Surveilr Tests
 
-on:
-  release:
-    types: [published]
+#on:
+  #release:
+   # types: [published]
   # Uncomment the next lines for testing purposes
   # push:
   #   branches:
   #     - main
+
+on:
+  push:
+    tags:
+      - '*'
+
 
 jobs:
   test:
