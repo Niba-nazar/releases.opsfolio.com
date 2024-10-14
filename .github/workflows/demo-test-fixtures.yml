@@ -1,0 +1,42 @@
+name: CI for Surveilr Tests
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout www.surveilr.com repository
+        uses: actions/checkout@v2
+        with:
+          repository: surveilr/www.surveilr.com
+          token: ${{ secrets.GH_PAT }}
+          ref: 'main'
+
+      - name: Install Deno
+        run: |
+          curl -fsSL https://deno.land/x/install/install.sh | sh
+          echo "export PATH=\"$HOME/.deno/bin:$PATH\"" >> $GITHUB_ENV
+          echo "Deno installed"
+
+      - name: Install eget
+        run: |
+          echo "Installing eget..."
+          curl -sSL https://zyedidia.github.io/eget.sh | bash
+
+      - name: Install or Upgrade Surveilr
+        run: |
+          if command -v surveilr &>/dev/null; then
+              echo "surveilr is installed. Upgrading..."
+              surveilr upgrade
+          else
+              echo "surveilr not found. Installing..."
+              eget opsfolio/surveilr --asset tar.gz
+              sudo mv surveilr /usr/local/bin/
+          fi
+
+      - name: Run Deno Tests
+        run: deno test -A ./lib/assurance/ --fail-fast
