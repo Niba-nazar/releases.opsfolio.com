@@ -1,18 +1,9 @@
 name: CI for Surveilr Tests
 
-#on:
-  #release:
-   # types: [published]
-  # Uncomment the next lines for testing purposes
-  # push:
-  #   branches:
-  #     - main
-
 on:
   push:
     tags:
       - '*'
-
 
 jobs:
   test:
@@ -29,11 +20,14 @@ jobs:
       - name: Install Deno
         run: |
           curl -fsSL https://deno.land/x/install/install.sh | sh
+          echo "Deno installed. Adding to PATH..."
           echo "export PATH=\"$HOME/.deno/bin:$PATH\"" >> $GITHUB_ENV
-          echo "Deno installed"
 
       - name: Check Deno Version
-        run: deno --version
+        run: |
+          echo "Checking Deno version..."
+          source $GITHUB_ENV
+          deno --version
 
       - name: Install eget
         run: |
@@ -41,19 +35,24 @@ jobs:
           curl -sSL https://zyedidia.github.io/eget.sh | bash
 
       - name: Check eget Installation
-        run: eget --version
+        run: |
+          echo "Checking eget version..."
+          eget --version
 
       - name: Install or Upgrade Surveilr
         run: |
           set -e
+          echo "Checking for Surveilr installation..."
           if command -v surveilr &>/dev/null; then
-              echo "surveilr is installed. Upgrading..."
+              echo "Surveilr is installed. Upgrading..."
               surveilr upgrade
           else
-              echo "surveilr not found. Installing..."
+              echo "Surveilr not found. Installing..."
               eget opsfolio/surveilr --asset tar.gz
               sudo mv surveilr /usr/local/bin/
           fi
 
       - name: Run Deno Tests
-        run: deno test -A ./lib/assurance/ --fail-fast
+        run: |
+          echo "Running Deno tests..."
+          deno test -A ./lib/assurance/ --fail-fast
