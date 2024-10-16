@@ -41,6 +41,8 @@ jobs:
 
       # Step 4: Install or Upgrade Surveilr
       - name: Install or Upgrade Surveilr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}  # Use the token for authentication
         run: |
           set -e
           cd ./lib/assurance/  # Change to the assurance directory
@@ -48,13 +50,21 @@ jobs:
           if command -v surveilr &>/dev/null; then
               echo "Surveilr is installed. Upgrading..."
               ./eget opsfolio/surveilr --asset tar.gz  # Use the local eget
-              surveilr upgrade
+              ./surveilr upgrade  # Run upgrade
           else
               echo "Surveilr not found. Installing..."
               ./eget opsfolio/surveilr --asset tar.gz  # Use the local eget
           fi
 
-      # Step 5: Run Deno Tests
+      # Step 5: Check Versions
+      - name: Check Versions
+        run: |
+          echo "Checking versions..."
+          cd ./lib/assurance/  # Ensure we're in the right directory
+          ./eget --version  # Check eget version
+          ./surveilr --version  # Check surveilr version
+
+      # Step 6: Run Deno Tests
       - name: Run Deno Tests
         run: |
           echo "Running Deno tests..."
