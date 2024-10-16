@@ -34,9 +34,10 @@ jobs:
         run: |
           echo "Installing eget..."
           curl -sSL https://zyedidia.github.io/eget.sh | bash
-          echo "eget has been installed. Adding to PATH..."
-          echo "$HOME/bin" >> $GITHUB_PATH  # Ensure egen is in PATH
+          echo "eget has been downloaded to the current directory."
+          mv eget-*/eget $HOME/bin/eget  # Move to $HOME/bin
           echo "eget is located at: $HOME/bin/eget"
+          echo "$HOME/bin" >> $GITHUB_PATH  # Add to PATH
 
       # Step 4: Check eget Installation
       - name: Check eget Version
