@@ -29,17 +29,7 @@ jobs:
           echo "Checking Deno version..."
           deno --version
 
-      # Step 3: Install eget in ./lib/assurance/
-      - name: Install eget
-        run: |
-          echo "Installing eget..."
-          curl -sSL https://zyedidia.github.io/eget.sh | bash
-          echo "Moving eget to ./lib/assurance/"
-          mv ./eget ./lib/assurance/eget  # Move to ./lib/assurance/
-          chmod +x ./lib/assurance/eget  # Make it executable
-          echo "eget is located at: ./lib/assurance/eget"
-
-      # Step 4: Install or Upgrade Surveilr
+          # Step 4: Install or Upgrade Surveilr
       - name: Install or Upgrade Surveilr
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}  # Use the token for authentication
@@ -49,19 +39,29 @@ jobs:
           echo "Checking for Surveilr installation..."
           if command -v surveilr &>/dev/null; then
               echo "Surveilr is installed. Upgrading..."
-              ./eget opsfolio/surveilr --asset tar.gz  # Use the local eget
               ./surveilr upgrade  # Run upgrade
           else
               echo "Surveilr not found. Installing..."
-              ./eget opsfolio/surveilr --asset tar.gz  # Use the local eget
+              # Fetch the latest release information
+              latest_release=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/opsfolio/surveilr/releases/latest)
+              download_url=$(echo "$latest_release" | jq -r '.assets[] | select(.name | contains("tar.gz")) | .browser_download_url')
+              
+              if [ -z "$download_url" ]; then
+                  echo "No downloadable asset found for Surveilr."
+                  exit 1
+              fi
+
+              curl -L -o surveilr.tar.gz "$download_url"
+              tar -xzf surveilr.tar.gz
+              chmod +x surveilr  # Make it executable
           fi
+
 
       # Step 5: Check Versions
       - name: Check Versions
         run: |
           echo "Checking versions..."
           cd ./lib/assurance/  # Ensure we're in the right directory
-          ./eget --version  # Check eget version
           ./surveilr --version  # Check surveilr version
 
       # Step 6: Run Deno Tests
