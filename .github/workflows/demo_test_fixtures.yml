@@ -1,58 +1,55 @@
-name: CI for Surveilr Tests
-
-on:
-  push:
-    tags:
-      - '*'
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout www.surveilr.com repository
-        uses: actions/checkout@v3
-        with:
-          repository: surveilr/www.surveilr.com
-          token: ${{ secrets.GH_PAT }}
+name: CI for Surveilr Testson: 
+  push:    
+    tags:      
+      - '*'jobs:  
+  test:    
+    runs-on: ubuntu-latest    
+    steps:      
+      - name: Checkout www.surveilr.com repository        
+        uses: actions/checkout@v3        
+        with:          
+          repository: surveilr/www.surveilr.com          
+          token: ${{ secrets.GH_PAT }}          
           ref: 'main'
-
-      - name: Install Deno
-        run: |
-          curl -fsSL https://deno.land/x/install/install.sh | sh
-          echo "Deno installed. Adding to PATH..."
+      
+      - name: Install Deno        
+        run: |          
+          curl -fsSL https://deno.land/x/install/install.sh | sh          
+          echo "Deno installed. Adding to PATH..."          
           echo "$HOME/.deno/bin" >> $GITHUB_PATH
 
-      #- name: Check Deno Version
-      #  run: |
-      #    echo "Checking Deno version..."
-        #  # Use the full path to Deno to verify installation
-        #  $HOME/.deno/bin/deno --version
-
-      - name: Install eget
-        run: |
-          echo "Installing eget..."
-          curl -sSL https://zyedidia.github.io/eget.sh | bash
-
-   #   - name: Check eget Installation
-     #   run: |
-       #   echo "Checking eget version..."
-        #  eget --version
-
-      - name: Install or Upgrade Surveilr
-        run: |
-          set -e
-          echo "Checking for Surveilr installation..."
-          if command -v surveilr &>/dev/null; then
-              echo "Surveilr is installed. Upgrading..."
-              surveilr upgrade
-          else
-              echo "Surveilr not found. Installing..."
-              eget opsfolio/surveilr --asset tar.gz
-              sudo mv surveilr /usr/local/bin/
+      - name: Check Deno Version        
+        run: |          
+          echo "Checking Deno version..."          
+          # Use the full path to Deno to verify installation          
+          $HOME/.deno/bin/deno --version
+      
+      - name: Install eget        
+        run: |          
+          echo "Installing eget..."          
+          curl -sSL https://zyedidia.github.io/eget.sh | bash          
+          echo "Adding eget to PATH..."          
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          
+      - name: Check eget Installation        
+        run: |          
+          echo "Checking eget version..."          
+          $HOME/.local/bin/eget --version
+      
+      - name: Install or Upgrade Surveilr        
+        run: |          
+          set -e          
+          echo "Checking for Surveilr installation..."          
+          if command -v surveilr &>/dev/null; then              
+            echo "Surveilr is installed. Upgrading..."              
+            surveilr upgrade          
+          else              
+            echo "Surveilr not found. Installing..."              
+            $HOME/.local/bin/eget opsfolio/surveilr --asset tar.gz              
+            sudo mv surveilr /usr/local/bin/          
           fi
 
-      - name: Run Deno Tests
-        run: |
-          echo "Running Deno tests..."
+      - name: Run Deno Tests        
+        run: |          
+          echo "Running Deno tests..."          
           $HOME/.deno/bin/deno test -A ./lib/assurance/ --fail-fast
