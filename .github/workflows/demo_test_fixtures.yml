@@ -25,23 +25,19 @@ jobs:
       - name: Check Deno Version        
         run: |          
           echo "Checking Deno version..."          
-          # Use the full path to Deno to verify installation          
           $HOME/.deno/bin/deno --version
-      
-      - name: Prepare for eget Installation
-        run: |
-          mkdir -p $HOME/.local/bin
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
       
       - name: Install eget        
         run: |          
           echo "Installing eget..."          
-          curl -sSL https://zyedidia.github.io/eget.sh | bash
+          curl -sSL https://zyedidia.github.io/eget.sh | bash          
+          echo "Moving eget to /usr/local/bin..."          
+          sudo mv eget /usr/local/bin/eget
           
       - name: Check eget Installation        
         run: |          
           echo "Checking eget version..."          
-          $HOME/.local/bin/eget --version
+          eget --version
       
       - name: Install or Upgrade Surveilr        
         run: |          
@@ -52,7 +48,7 @@ jobs:
             surveilr upgrade          
           else              
             echo "Surveilr not found. Installing..."              
-            $HOME/.local/bin/eget opsfolio/surveilr --asset tar.gz              
+            eget opsfolio/surveilr --asset tar.gz              
             sudo mv surveilr /usr/local/bin/          
           fi
 
