@@ -34,10 +34,10 @@ jobs:
           echo "Installing eget..."
           curl -sSL https://zyedidia.github.io/eget.sh | bash
 
-      - name: Check eget Installation
-        run: |
-          echo "Checking eget version..."
-          eget --version
+   #   - name: Check eget Installation
+     #   run: |
+       #   echo "Checking eget version..."
+        #  eget --version
 
       - name: Install or Upgrade Surveilr
         run: |
