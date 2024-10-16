@@ -31,8 +31,9 @@ jobs:
         run: |          
           echo "Installing eget..."          
           curl -sSL https://zyedidia.github.io/eget.sh | bash          
+          chmod +x ./eget          
           echo "Moving eget to /usr/local/bin..."          
-          sudo mv eget /usr/local/bin/eget
+          sudo mv ./eget /usr/local/bin/eget
           
       - name: Check eget Installation        
         run: |          
