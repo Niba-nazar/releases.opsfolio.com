@@ -17,6 +17,10 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           ref: 'main'
 
+      # Step 1: Set up jq
+      - name: Install jq
+        run: sudo apt-get install -y jq
+        
       # Step 1: Set up Deno
       - name: Set up Deno
         uses: denoland/setup-deno@v1
