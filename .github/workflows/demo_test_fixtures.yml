@@ -30,16 +30,16 @@ jobs:
           deno --version
 
       # Step 3: Install eget
-     - name: Install eget
-       run: |
-         echo "Installing eget..."
-         curl -sSL https://zyedidia.github.io/eget.sh | bash
-         echo "eget has been downloaded to the current directory."
-         pwd
-         ls -la  # List contents of the current directory
-         mv ./eget $HOME/bin/eget  # Move to $HOME/bin
-         echo "eget is located at: $HOME/bin/eget"
-         echo "$HOME/bin" >> $GITHUB_PATH  # Add to PATH
+      - name: Install eget
+        run: |
+          echo "Installing eget..."
+          curl -sSL https://zyedidia.github.io/eget.sh | bash
+          echo "eget has been downloaded to the current directory."
+          pwd
+          ls -la  # List contents of the current directory
+          mv ./eget $HOME/bin/eget  # Move to $HOME/bin
+          echo "eget is located at: $HOME/bin/eget"
+          echo "$HOME/bin" >> $GITHUB_PATH  # Add to PATH
 
 
       # Step 4: Check eget Installation
