@@ -33,34 +33,31 @@ jobs:
           echo "Checking Deno version..."
           deno --version
 
-      - name: Install or Upgrade Surveilr
+      - name: Install Surveilr
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           set -e
           cd ./lib/assurance/  # Change to the assurance directory
-          echo "Checking for Surveilr installation..."
-          if command -v surveilr &>/dev/null; then
-              echo "Surveilr is installed. Upgrading..."
-              ./surveilr upgrade
-          else
-              echo "Surveilr not found. Installing..."
-              echo "Fetching latest release..."
-              latest_release=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/opsfolio/releases.opsfolio.com/releases/latest)
-              echo "Latest release response: $latest_release"
-              
-              download_url=$(echo "$latest_release" | jq -r '.assets[] | select(.name | contains("tar.gz")) | .browser_download_url')
-              
-              if [ -z "$download_url" ]; then
-                  echo "No downloadable asset found for Surveilr."
-                  exit 1
-              fi
-
-              echo "Downloading Surveilr from $download_url..."
-              curl -L -o surveilr.tar.gz "$download_url"
-              tar -xzf surveilr.tar.gz
-              chmod +x surveilr
+          echo "Installing Surveilr..."
+          
+          # Fetch the latest release information
+          latest_release=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/opsfolio/releases.opsfolio.com/releases/latest)
+          download_url=$(echo "$latest_release" | jq -r '.assets[] | select(.name | contains("tar.gz")) | .browser_download_url')
+          
+          if [ -z "$download_url" ]; then
+              echo "No downloadable asset found for Surveilr."
+              exit 1
           fi
+
+          echo "Downloading Surveilr from $download_url..."
+          curl -L -o surveilr.tar.gz "$download_url"
+          tar -xzf surveilr.tar.gz
+          chmod +x ./surveilr  # Make it executable
+
+          # Move to /usr/local/bin
+          sudo mv ./surveilr /usr/local/bin/surveilr
+          echo "Surveilr installed and moved to /usr/local/bin."
 
 
       # Step 5: Check Versions
@@ -68,7 +65,7 @@ jobs:
         run: |
           echo "Checking versions..."
           cd ./lib/assurance/  # Ensure we're in the right directory
-          ./surveilr --version  # Check surveilr version
+          surveilr --version  # Check surveilr version
 
       # Step 6: Run Deno Tests
       - name: Run Deno Tests
