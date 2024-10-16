@@ -21,12 +21,11 @@ jobs:
         run: |
           curl -fsSL https://deno.land/x/install/install.sh | sh
           echo "Deno installed. Adding to PATH..."
-          echo "export PATH=\"$HOME/.deno/bin:$PATH\"" >> $GITHUB_ENV
+          echo "$HOME/.deno/bin" >> $GITHUB_PATH
 
       - name: Check Deno Version
         run: |
           echo "Checking Deno version..."
-          source $GITHUB_ENV
           deno --version
 
       - name: Install eget
