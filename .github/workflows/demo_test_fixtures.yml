@@ -1,7 +1,11 @@
-name: CI for Surveilr Testson: 
+name: CI for Surveilr Tests
+
+on: 
   push:    
     tags:      
-      - '*'jobs:  
+      - '*'
+
+jobs:  
   test:    
     runs-on: ubuntu-latest    
     steps:      
@@ -24,12 +28,15 @@ name: CI for Surveilr Testson:
           # Use the full path to Deno to verify installation          
           $HOME/.deno/bin/deno --version
       
+      - name: Prepare for eget Installation
+        run: |
+          mkdir -p $HOME/.local/bin
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      
       - name: Install eget        
         run: |          
           echo "Installing eget..."          
-          curl -sSL https://zyedidia.github.io/eget.sh | bash          
-          echo "Adding eget to PATH..."          
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          curl -sSL https://zyedidia.github.io/eget.sh | bash
           
       - name: Check eget Installation        
         run: |          
