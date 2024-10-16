@@ -34,14 +34,15 @@ jobs:
         run: |
           echo "Installing eget..."
           curl -sSL https://zyedidia.github.io/eget.sh | bash
-          echo "eget installed. Adding to PATH..."
+          echo "eget has been installed. Adding to PATH..."
           echo "$HOME/bin" >> $GITHUB_PATH  # Ensure egen is in PATH
+          echo "eget is located at: $HOME/bin/eget"
 
       # Step 4: Check eget Installation
       - name: Check eget Version
         run: |
           echo "Checking eget version..."
-          eget --version
+          $HOME/bin/eget --version  # Use the full path to check version
 
       # Step 5: Install or Upgrade Surveilr
       - name: Install or Upgrade Surveilr
@@ -53,7 +54,7 @@ jobs:
               surveilr upgrade
           else
               echo "Surveilr not found. Installing..."
-              eget opsfolio/surveilr --asset tar.gz
+              $HOME/bin/eget opsfolio/surveilr --asset tar.gz  # Use the full path here
               sudo mv surveilr /usr/local/bin/
           fi
 
